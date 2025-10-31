@@ -1,0 +1,17 @@
+# 🍃 SaccharumVision - GitIgnore
+# ================================
+
+# Entorno Virtual de Python
+venv/
+env/
+ENV/
+
+# Carpeta de Tests
+tests/
+
+# Carpeta de Uploads (imágenes subidas)
+uploads/
+
+# Archivos de Python (caché)
+__pycache__/
+*.pyc

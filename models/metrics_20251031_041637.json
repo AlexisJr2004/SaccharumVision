@@ -1,0 +1,15 @@
+{
+  "timestamp": "20251031_041637",
+  "architecture": "ResNet50_2Phase_Balanced",
+  "phase1_best_val_acc": 0.9348958134651184,
+  "phase2_best_val_acc": 0.9348958134651184,
+  "test_accuracy": 0.9114583333333334,
+  "desbalance_ratio": 1.1324786324786325,
+  "per_class_accuracy": {
+    "Healthy": 0.9240506329113924,
+    "Mosaic": 0.9014084507042254,
+    "RedRot": 0.9615384615384616,
+    "Rust": 0.8987341772151899,
+    "Yellow": 0.8701298701298701
+  }
+}
