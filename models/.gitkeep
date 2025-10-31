@@ -1,5 +1,0 @@
-# Este archivo mantiene la carpeta models/ en el repositorio
-# Aquí se deben colocar:
-# - resnet50_latest.keras (modelo entrenado)
-# - classes_latest.json (clases del modelo)
-# - metrics_*.json (métricas de entrenamiento)

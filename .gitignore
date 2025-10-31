@@ -15,6 +15,3 @@ uploads/
 # Archivos de Python (caché)
 __pycache__/
 *.pyc
-
-# Modelos
-models/
