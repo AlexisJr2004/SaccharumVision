@@ -4,9 +4,6 @@
 # Entorno Virtual de Python
 venv/
 
-# Carpeta de Uploads (imágenes subidas)
-uploads/
-
 # Archivos de Python (caché)
 __pycache__/
 *.pyc
