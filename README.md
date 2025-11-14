@@ -2,7 +2,7 @@
 
 ## 📋 Descripción
 
-SaccharumVision es un sistema de visión por computadora basado en Deep Learning para la detección automática de enfermedades en plantaciones de caña de azúcar. Utiliza una arquitectura ResNet50 con Test Time Augmentation (TTA) para lograr predicciones precisas.
+SaccharumVision es un sistema de visión por computadora basado en Deep Learning para la detección automática de enfermedades en caña de azúcar. Implementa tres arquitecturas CNN (ResNet50, EfficientNetB0 y MobileNetV2) con una interfaz web moderna para análisis en tiempo real.
 
 ## 🎯 Enfermedades Detectadas
 
@@ -14,27 +14,28 @@ SaccharumVision es un sistema de visión por computadora basado en Deep Learning
 
 ## 🚀 Características
 
-- ⭐ **Predicción con TTA**: Test Time Augmentation activado por defecto para mayor precisión (80-99% confianza)
-- 📊 **Interfaz Web Intuitiva**: Sistema de drag & drop para subir imágenes
+- 🤖 **Múltiples Modelos**: ResNet50, EfficientNetB0 y MobileNetV2
+- 📸 **Análisis en Tiempo Real**: Cámara web integrada y carga de archivos
+- 📊 **Historial de Análisis**: Seguimiento completo de predicciones
+- ⚙️ **Configuración Flexible**: Ajuste de umbrales y selección de modelos
+- 🎨 **Interfaz Moderna**: Diseño responsive con Tailwind CSS
 - 🔬 **API RESTful**: Endpoints para integración con otros sistemas
-- 📈 **Análisis Detallado**: Muestra probabilidades para todas las clases
-- 🎨 **Diseño Moderno**: Interfaz con Tailwind CSS
 
 ## 🛠️ Tecnologías
 
-- **Backend**: Flask (Python)
-- **Deep Learning**: TensorFlow/Keras
-- **Modelo**: ResNet50 (Transfer Learning)
+- **Backend**: Flask 3.1.0
+- **Deep Learning**: TensorFlow 2.18.0 / Keras 3.8.0
+- **Modelos**: ResNet50, EfficientNetB0, MobileNetV2
 - **Frontend**: HTML5, Tailwind CSS, JavaScript
-- **Precisión**: 90%+ con TTA
+- **Procesamiento**: Pillow, NumPy
 
 ## 📦 Instalación
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
-cd Proyecto_Agronomìa
+git clone https://github.com/AlexisJr2004/SaccharumVision.git
+cd SaccharumVision
 ```
 
 ### 2. Crear entorno virtual
@@ -55,11 +56,23 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configurar archivos necesarios
+### 4. Configurar modelos
 
-Asegúrate de tener los siguientes archivos en la carpeta `models/`:
-- `resnet50_latest.keras` (modelo entrenado)
-- `classes_latest.json` (clases del modelo)
+Asegúrate de tener la estructura de modelos:
+```
+models/
+├── ResNet50/
+│   ├── ResNet50_latest.keras
+│   └── classes_latest.json
+├── EfficientNetB0/
+│   ├── EfficientNetB0_latest.keras
+│   └── classes_latest.json
+└── MobileNetV2/
+    ├── MobileNetV2_latest.keras
+    └── classes_classes.json
+```
+
+> **Nota**: Los modelos están gestionados con Git LFS debido a su tamaño.
 
 ### 5. Ejecutar la aplicación
 
@@ -72,53 +85,59 @@ La aplicación estará disponible en: `http://localhost:5000`
 ## 📁 Estructura del Proyecto
 
 ```
-Proyecto_Agronomìa/
+SaccharumVision/
 │
 ├── app.py                      # Aplicación Flask principal
 ├── requirements.txt            # Dependencias de Python
 ├── .gitignore                 # Archivos ignorados por Git
-├── CHANGELOG_TTA.md           # Documentación de cambios TTA
+├── .gitattributes             # Configuración Git LFS
 │
 ├── config/
-│   ├── config.py              # Configuración de la aplicación
-│   └── __pycache__/
+│   └── config.py              # Configuración de la aplicación
 │
-├── models/
-│   ├── resnet50_latest.keras  # Modelo entrenado (no en git)
-│   ├── classes_latest.json    # Clases del modelo
-│   ├── metrics_*.json         # Métricas de entrenamiento
-│   └── .gitkeep
+├── models/                     # Modelos entrenados (Git LFS)
+│   ├── ResNet50/
+│   ├── EfficientNetB0/
+│   └── MobileNetV2/
 │
 ├── static/
 │   ├── assets/                # Recursos estáticos
 │   └── js/
 │       └── analyze.js         # JavaScript para análisis
 │
-├── templates/
+├── templates/                  # Plantillas HTML
+│   ├── base.html              # Plantilla base
 │   ├── index.html             # Página principal
-│   ├── analyze.html           # Página de análisis
-│   ├── 404.html               # Error 404
-│   └── 500.html               # Error 500
+│   ├── camera.html            # Captura desde cámara
+│   ├── results.html           # Resultados de análisis
+│   ├── history.html           # Historial de análisis
+│   ├── history_details.html   # Detalles de análisis
+│   ├── settings.html          # Configuración
+│   └── terms.html             # Términos y condiciones
 │
 ├── tests/
-│   ├── test_images_batch.py   # Test de predicciones por lote
-│   ├── test_api_tta.py        # Test de API con TTA
-│   └── .gitkeep
+│   └── test_comparison_models.py  # Comparación de modelos
 │
-├── uploads/                    # Imágenes subidas (no en git)
-│   └── .gitkeep
+├── uploads/                    # Imágenes subidas (ignorado)
 │
 └── utils/
     ├── __init__.py
-    ├── model_manager.py       # Gestor del modelo
-    └── __pycache__/
+    └── model_manager.py       # Gestor de modelos
 ```
 
 ## 🔧 Configuración
 
+### Modelos Disponibles
+
+| Modelo | Tamaño Entrada | Características |
+|--------|---------------|-----------------|
+| **ResNet50** | 224×224 | Equilibrado y confiable |
+| **EfficientNetB0** | 256×256 | Eficiente y preciso |
+| **MobileNetV2** | 256×256 | Rápido y ligero |
+
 ### Variables de Entorno
 
-Puedes crear un archivo `.env` con las siguientes variables:
+Opcionalmente, crea un archivo `.env`:
 
 ```env
 FLASK_ENV=development
@@ -127,34 +146,25 @@ HOST=0.0.0.0
 PORT=5000
 ```
 
-### Configuración del Modelo
-
-En `config/config.py` puedes ajustar:
-- Tamaño de imagen
-- Ruta del modelo
-- Extensiones permitidas
-- Tamaño máximo de archivo
-
 ## 📡 API Endpoints
 
-### 1. Predicción con TTA (Principal)
+### 1. Analizar Imagen
 
 ```bash
-POST /api/predict
+POST /analyze
 Content-Type: multipart/form-data
 
 Parámetros:
-- file: imagen a analizar (JPG, PNG, BMP, TIFF)
-- use_tta: true/false (default: true)
-- threshold: 0.0-1.0 (default: 0.70)
-- num_augmentations: int (default: 5)
+- file: imagen a analizar
+- model: ResNet50 | EfficientNetB0 | MobileNetV2 (opcional)
 ```
 
 **Ejemplo con cURL:**
 
 ```bash
-curl -X POST http://localhost:5000/api/predict \
-  -F "file=@imagen.jpg"
+curl -X POST http://localhost:5000/analyze \
+  -F "file=@imagen.jpg" \
+  -F "model=ResNet50"
 ```
 
 **Ejemplo con Python:**
@@ -163,171 +173,118 @@ curl -X POST http://localhost:5000/api/predict \
 import requests
 
 files = {'file': open('imagen.jpg', 'rb')}
-response = requests.post('http://localhost:5000/api/predict', files=files)
-data = response.json()
+data = {'model': 'ResNet50'}
+response = requests.post('http://localhost:5000/analyze', files=files, data=data)
+result = response.json()
 
-print(f"Clase: {data['prediction']['class']}")
-print(f"Confianza: {data['prediction']['confidence']:.2f}%")
+print(f"Clase: {result['prediction']}")
+print(f"Confianza: {result['confidence']:.2f}%")
 ```
 
-### 2. Predicción Mejorada (Alternativa)
+### 2. Obtener Modelos Disponibles
 
 ```bash
-POST /api/predict-improved
+GET /api/models
 ```
 
-### 3. Top 3 Predicciones
+### 3. Historial de Análisis
 
 ```bash
-POST /api/predict-top3
+GET /history
 ```
 
-### 4. Salud del Servidor
+### 4. Detalles de Análisis
 
 ```bash
-GET /api/health
-```
-
-### 5. Clases Disponibles
-
-```bash
-GET /api/classes
+GET /history/<analysis_id>
 ```
 
 ## 🧪 Testing
 
-### Test de Predicciones por Lote
-
-Analiza todas las imágenes en la carpeta `uploads/`:
+### Comparación de Modelos
 
 ```bash
-# Test básico (sin TTA)
-python tests/test_images_batch.py
-
-# Test con TTA (recomendado)
-python tests/test_images_batch.py --tta
-
-# Test sin guardar resultados
-python tests/test_images_batch.py --tta --no-save
+python tests/test_comparison_models.py
 ```
 
-### Test de API
+Este test evalúa el rendimiento de los tres modelos con las mismas imágenes.
 
-Prueba el endpoint `/api/predict`:
+## 🎯 Uso de la Aplicación
+
+### Interfaz Web
+
+1. **Página Principal** (`/`): Sube imágenes o usa la cámara
+2. **Configuración** (`/settings`): Selecciona el modelo y ajusta umbrales
+3. **Historial** (`/history`): Revisa análisis anteriores
+4. **Resultados** (`/results`): Visualiza predicciones detalladas
+
+### Análisis desde Cámara
+
+1. Accede a `/camera`
+2. Permite el acceso a la cámara
+3. Captura la imagen de la hoja
+4. Analiza automáticamente
+
+## 🐛 Solución de Problemas
+
+### Modelo no encontrado
 
 ```bash
-python tests/test_api_tta.py
+# Verifica que los modelos existen
+ls models/ResNet50/ResNet50_latest.keras
 ```
 
-## 📊 Comparación de Métodos
-
-| Método | Tiempo | Precisión | Confianza Promedio |
-|--------|--------|-----------|-------------------|
-| Estándar | ~0.5s | ❌ Baja | ~32% |
-| TTA (5 aug) | ~2.5s | ✅ Alta | ~90% |
-| TTA (10 aug) | ~4.5s | ✅ Muy Alta | ~92% |
-
-## ⚙️ Configuración Recomendada
-
-### Para Producción (balance precisión/velocidad)
-
-```python
-use_tta = True
-threshold = 0.70
-num_augmentations = 5
-```
-
-### Para Máxima Precisión
-
-```python
-use_tta = True
-threshold = 0.80
-num_augmentations = 10
-```
-
-### Para Máxima Velocidad (no recomendado)
-
-```python
-use_tta = False
-threshold = 0.50
-```
-
-## 🎓 ¿Qué es TTA?
-
-**Test Time Augmentation** es una técnica que:
-1. Aplica múltiples transformaciones aleatorias a la imagen
-2. Realiza una predicción para cada versión transformada
-3. Promedia todas las predicciones para obtener un resultado robusto
-
-**Ventajas:**
-- ✅ Mayor precisión (80-99% vs 30-35%)
-- ✅ Más robustez ante variaciones
-- ✅ Reduce impacto de ruido e iluminación
-
-**Desventajas:**
-- ⏱️ Mayor tiempo de procesamiento (~2-4s vs 0.5s)
-
-## 🐛 Troubleshooting
-
-### Error: Modelo no encontrado
+Si faltan, asegúrate de haber clonado correctamente con Git LFS:
 
 ```bash
-# Asegúrate de tener el modelo en la carpeta correcta
-ls models/resnet50_latest.keras
+git lfs pull
 ```
 
-### Error: Puerto 5000 ocupado
+### Puerto ocupado
 
 ```bash
-# Cambia el puerto en config/config.py o usa:
+# Usa un puerto diferente
 python app.py --port 8080
 ```
 
-### Error: Memoria insuficiente
+### Error de importación
 
-Reduce el número de aumentaciones:
-```python
-num_augmentations = 3  # En lugar de 5
+```bash
+# Reinstala las dependencias
+pip install -r requirements.txt --force-reinstall
 ```
 
 ## 📝 Notas Importantes
 
-1. **Modelos**: Los archivos `.keras` son grandes y no están en el repositorio. Debes entrenar tu propio modelo o solicitar acceso.
-
-2. **Imágenes**: La carpeta `uploads/` está en `.gitignore`. Las imágenes de prueba no se subirán al repositorio.
-
-3. **Tests**: Los archivos de test están ignorados pero la carpeta se mantiene con `.gitkeep`.
-
-4. **Entorno Virtual**: Siempre activa el entorno virtual antes de trabajar:
-   ```bash
-   venv\Scripts\activate  # Windows
-   source venv/bin/activate  # Linux/Mac
-   ```
+- **Git LFS**: Los modelos `.keras` se gestionan con Git LFS debido a su tamaño (>100MB)
+- **Uploads**: La carpeta `uploads/` está en `.gitignore` y no se sincroniza
+- **Cache**: Los modelos se cargan en memoria para mayor velocidad
+- **Formatos**: Soporta PNG, JPG, JPEG, GIF, BMP, WEBP
 
 ## 🤝 Contribuir
 
 1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
+2. Crea una rama (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -m 'Añadir nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
 5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto es parte de un sistema de visión agrónoma para la detección de enfermedades en caña de azúcar.
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 
 ## 👨‍💻 Autor
 
-Sistema de Visión Agrónoma - SaccharumVision
+**Alexis Jr** - [AlexisJr2004](https://github.com/AlexisJr2004)
 
-## 🔗 Enlaces
+## 🔗 Enlaces Útiles
 
-- [Documentación de Flask](https://flask.palletsprojects.com/)
+- [Documentación Flask](https://flask.palletsprojects.com/)
 - [TensorFlow](https://www.tensorflow.org/)
-- [ResNet Paper](https://arxiv.org/abs/1512.03385)
+- [Git LFS](https://git-lfs.github.com/)
 
 ---
 
-**Última actualización:** 31 de Octubre de 2025
+⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub
 
-**Versión:** 1.0.0 (TTA Activado por Defecto)
+**Última actualización:** Noviembre 2025
