@@ -4,9 +4,6 @@
 # Entorno Virtual de Python
 venv/
 
-# Carpeta de Tests
-tests/
-
 # Carpeta de Uploads (imágenes subidas)
 uploads/
 
