@@ -2,28 +2,33 @@
 🍃 SaccharumVision - Configuración
 ==================================
 
-Archivo de configuración centralizado con todas las constantes
-y configuraciones de la aplicación.
+Archivo centralizado de configuración para la aplicación SaccharumVision.
+Incluye rutas, constantes del modelo, configuración del servidor y validación
+de directorios críticos.
 """
 
 import os
+import logging
 
 # ============================
-# CONFIGURACIÓN DEL MODELO
+# RUTAS Y ARCHIVOS DEL MODELO
 # ============================
-IMG_SIZE = (224, 224)  # Tamaño esperado por el modelo
-MODEL_PATH = 'models/resnet50_latest.keras'
-CLASSES_PATH = 'models/classes_latest.json'
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Clases por defecto si no hay archivo
+IMG_SIZE = (224, 224)  # Tamaño requerido por el modelo
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'resnet50_latest.keras')
+CLASSES_PATH = os.path.join(BASE_DIR, 'models', 'classes_latest.json')
+
+# Clases por defecto si no se encuentra archivo
 DEFAULT_CLASSES = ['Healthy', 'Mosaic', 'RedRot', 'Rust', 'Yellow']
 
 # ============================
 # CONFIGURACIÓN DE FLASK
 # ============================
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB máximo
+
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
 SECRET_KEY = 'saccharum_vision_secret_key_2024'
 
 # ============================
@@ -38,97 +43,95 @@ PORT = 5000
 # ============================
 LOG_LEVEL = 'INFO'
 LOG_FORMAT = '[%(asctime)s] %(levelname)s: %(message)s'
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 # ============================
-# CONFIGURACIÓN DE ARCHIVOS
+# VALIDACIÓN DE RUTAS CRÍTICAS
 # ============================
-# Validación de rutas críticas
 def validate_paths():
-    """
-    Valida que existan las rutas críticas del proyecto
-    """
+    """Valida que existan las rutas críticas del sistema."""
     errors = []
-    
+
     # Verificar modelo
     if not os.path.exists(MODEL_PATH):
         errors.append(f"Modelo no encontrado: {MODEL_PATH}")
-    
+
     # Verificar directorio de modelos
     model_dir = os.path.dirname(MODEL_PATH)
     if not os.path.exists(model_dir):
         errors.append(f"Directorio de modelos no encontrado: {model_dir}")
-    
-    # Crear directorio de uploads si no existe
-    if not os.path.exists(UPLOAD_FOLDER):
-        try:
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-        except Exception as e:
-            errors.append(f"No se pudo crear directorio de uploads: {e}")
-    
+
+    # Verificar / crear directorio de uploads
+    try:
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    except Exception as e:
+        errors.append(f"No se pudo crear el directorio de uploads: {e}")
+
     return errors
 
 # ============================
-# CONFIGURACIÓN ESPECÍFICA
+# CLASES DE CONFIGURACIÓN
 # ============================
 class Config:
-    """Clase de configuración para diferentes entornos"""
-    
-    # Configuración base
+    """Configuración base utilizada por todos los entornos."""
+
+    # App
     SECRET_KEY = SECRET_KEY
     UPLOAD_FOLDER = UPLOAD_FOLDER
     MAX_CONTENT_LENGTH = MAX_CONTENT_LENGTH
-    
-    # Configuración del modelo
+
+    # Modelo
     MODEL_PATH = MODEL_PATH
     CLASSES_PATH = CLASSES_PATH
     IMG_SIZE = IMG_SIZE
     DEFAULT_CLASSES = DEFAULT_CLASSES
-    
-    # Extensiones permitidas
+
+    # Archivos permitidos
     ALLOWED_EXTENSIONS = ALLOWED_EXTENSIONS
-    
+
     @staticmethod
     def init_app(app):
-        """Inicializa configuración específica de la app"""
+        """Inicializaciones específicas opcionales."""
         pass
 
 class DevelopmentConfig(Config):
-    """Configuración para desarrollo"""
+    """Configuración utilizada durante desarrollo."""
     DEBUG = True
     HOST = HOST
     PORT = PORT
 
 class ProductionConfig(Config):
-    """Configuración para producción"""
+    """Configuración específica para producción."""
     DEBUG = False
     HOST = '0.0.0.0'
     PORT = int(os.environ.get('PORT', 5000))
-    
+
     @classmethod
     def init_app(cls, app):
-        Config.init_app(app)
-        
-        # Configuraciones específicas de producción
-        import logging
-        from logging.handlers import RotatingFileHandler
-        
-        # Configurar logging para producción
-        if not app.debug and not app.testing:
-            if not os.path.exists('logs'):
-                os.mkdir('logs')
-            
-            file_handler = RotatingFileHandler(
-                'logs/saccharumvision.log', 
-                maxBytes=10240000, 
-                backupCount=10
-            )
-            file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-            file_handler.setLevel(logging.INFO)
-            app.logger.addHandler(file_handler)
-            app.logger.setLevel(logging.INFO)
-            app.logger.info('SaccharumVision startup')
+        super().init_app(app)
 
-# Mapeo de configuraciones
+        # Crear directorio de logs si no existe
+        os.makedirs(LOG_DIR, exist_ok=True)
+
+        # Configurar logging rotativo
+        from logging.handlers import RotatingFileHandler
+
+        file_handler = RotatingFileHandler(
+            os.path.join(LOG_DIR, 'saccharumvision.log'),
+            maxBytes=10 * 1024 * 1024,  # 10 MB
+            backupCount=10
+        )
+
+        file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+        file_handler.setLevel(logging.INFO)
+
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('SaccharumVision iniciado en producción')
+
+# ============================
+# MAPEO DE CONFIGURACIONES
+# ============================
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,

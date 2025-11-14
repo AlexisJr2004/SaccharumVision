@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}AgroScan - Detalle del Análisis{% endblock %}
+
+{% block active_page %}history{% endblock %}
+
+{% block page_title %}Detalle del Análisis{% endblock %}
+{% block page_subtitle %}Información completa{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-3">
+    <div class="relative">
+        <input type="text" placeholder="Buscar..." class="w-64 pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-slate-400 dark:placeholder-slate-500">
+        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+    </div>
+    
+    <div class="flex items-center gap-2">
+        <a href="/history" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            Historial
+        </a>
+        
+        <a href="/history_details" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-blue-500/30">
+            Detalles del Análisis
+        </a>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<!-- Decorative Elements -->
+<div class="relative">
+    <div class="absolute top-20 right-10 w-32 h-32 bg-emerald-400/20 dark:bg-emerald-400/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-40 left-10 w-40 h-40 bg-blue-400/20 dark:bg-blue-400/10 rounded-full blur-3xl"></div>
+    
+    <div class="relative z-10 space-y-6" id="mainContent">
+        <!-- Layout Principal: Imagen a la izquierda, contenido a la derecha -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Columna Izquierda: Imagen -->
+            <div class="space-y-6">
+                <!-- Image Section -->
+                <div class="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 flex items-center justify-center" style="height: 400px;">
+                    <img id="analysisImage" src="" alt="Análisis" class="w-full h-full object-contain">
+                    <div class="absolute top-4 right-4 bg-black/70 dark:bg-black/80 backdrop-blur px-3 py-2 rounded-xl flex items-center gap-2">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span id="analysisDate" class="text-white text-sm font-semibold"></span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button onclick="newAnalysis()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-3xl font-semibold shadow-xl shadow-emerald-500/30 hover:shadow-2xl transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        </svg>
+                        Nuevo Análisis
+                    </button>
+                    <button onclick="shareResults()" class="flex-1 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl text-emerald-600 dark:text-emerald-400 rounded-3xl font-semibold shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl transition flex items-center justify-center gap-2 border-2 border-emerald-600/60 dark:border-emerald-500/60">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                        Compartir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Diagnóstico y otros resultados -->
+            <div class="space-y-6">
+                <!-- Stats Summary -->
+                <div class="bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 backdrop-blur-xl rounded-3xl p-5 border border-emerald-200/60 dark:border-emerald-700/40 shadow-xl shadow-emerald-200/50 dark:shadow-emerald-900/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="font-semibold text-slate-800 dark:text-white">Análisis Completado</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mt-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400" id="statConfidence">98%</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Confianza</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">IA</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">ResNet50</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="statTTA">TTA</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Precisión</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Result Card -->
+                <div class="space-y-3">
+                    <div class="text-slate-800 dark:text-white font-bold text-xl ml-2">Diagnóstico</div>
+                    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div id="diseaseEmoji" class="text-6xl"></div>
+                            <div class="flex-1">
+                                <h2 id="diseaseName" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
+                                <p class="text-slate-600 dark:text-slate-400">
+                                    Severidad: <span id="diseaseSeverity" class="font-semibold"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Confidence Bar -->
+                        <div class="pt-5 border-t border-slate-200 dark:border-slate-700">
+                            <div class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Nivel de Confianza</div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1 h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div id="confidenceBar" class="h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <div id="confidencePercent" class="text-xl font-bold text-slate-800 dark:text-white w-16 text-right"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="space-y-3">
+                    <div class="text-slate-800 dark:text-white font-bold text-lg ml-2">📋 Descripción</div>
+                    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+                        <p id="diseaseDescription" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Recommendations Section -->
+                <div class="space-y-3">
+                    <div class="text-slate-800 dark:text-white font-bold text-lg ml-2">💡 Recomendaciones</div>
+                    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+                        <ul id="recommendationsList" class="space-y-3"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-6 py-3 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 hidden z-50">
+    <div class="flex items-center gap-2">
+        <span id="toastIcon">ℹ️</span>
+        <span id="toastMessage" class="font-semibold text-slate-800 dark:text-white"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        // Base de datos de enfermedades
+        const diseaseDatabase = {
+            'Healthy': {
+                name: 'Saludable',
+                emoji: '🌱',
+                severity: 'Ninguna',
+                color: '#10B981',
+                description: 'La planta presenta un estado óptimo de salud. No se detectaron signos de enfermedades, plagas o deficiencias nutricionales. Las hojas muestran un color verde vibrante y una estructura celular normal.',
+                recommendations: [
+                    'Mantener el régimen de riego actual',
+                    'Continuar con el programa de fertilización establecido',
+                    'Realizar monitoreo preventivo regular',
+                    'Mantener las condiciones ambientales actuales'
+                ]
+            },
+            'Mosaic': {
+                name: 'Mosaico',
+                emoji: '🦠',
+                severity: 'Media',
+                color: '#F97316',
+                description: 'Virus del mosaico detectado. Esta enfermedad viral causa patrones de decoloración en mosaico en las hojas, afectando la fotosíntesis y el crecimiento general de la planta.',
+                recommendations: [
+                    'Aislar inmediatamente las plantas infectadas',
+                    'Eliminar y destruir hojas muy afectadas',
+                    'Desinfectar herramientas de poda entre plantas',
+                    'Controlar insectos vectores como pulgones y moscas blancas',
+                    'Aplicar aceites minerales para reducir la transmisión'
+                ]
+            },
+            'RedRot': {
+                name: 'Podredumbre Roja',
+                emoji: '🍂',
+                severity: 'Alta',
+                color: '#EF4444',
+                description: 'Infección por hongos que causa podredumbre en raíces y tallos. Esta enfermedad progresa rápidamente en condiciones de alta humedad y puede causar la muerte de la planta si no se trata.',
+                recommendations: [
+                    'Mejorar inmediatamente el drenaje del suelo',
+                    'Reducir frecuencia de riego',
+                    'Aplicar fungicidas sistémicos apropiados',
+                    'Remover y destruir tejido infectado',
+                    'Considerar trasplante a sustrato nuevo y estéril'
+                ]
+            },
+            'Rust': {
+                name: 'Roya',
+                emoji: '🔶',
+                severity: 'Media-Alta',
+                color: '#FB923C',
+                description: 'Infección fúngica que produce pústulas de color naranja-rojizo en el envés de las hojas. Reduce significativamente la capacidad fotosintética y puede propagarse rápidamente.',
+                recommendations: [
+                    'Aplicar fungicidas específicos para roya',
+                    'Mejorar la circulación de aire alrededor de las plantas',
+                    'Remover hojas severamente infectadas',
+                    'Evitar el riego por aspersión',
+                    'Aplicar azufre en polvo como preventivo'
+                ]
+            },
+            'Yellow': {
+                name: 'Amarillamiento',
+                emoji: '⚠️',
+                severity: 'Media',
+                color: '#F59E0B',
+                description: 'Amarillamiento generalizado de las hojas que puede indicar deficiencias nutricionales, problemas de riego, o inicio de enfermedades. Requiere diagnóstico más específico.',
+                recommendations: [
+                    'Verificar niveles de nitrógeno en el suelo',
+                    'Revisar pH del sustrato (debe estar entre 6.0-7.0)',
+                    'Evaluar programa de fertilización',
+                    'Comprobar drenaje y frecuencia de riego',
+                    'Aplicar fertilizante foliar rico en nitrógeno si es necesario'
+                ]
+            }
+        };
+
+        // Cargar datos
+        function loadData() {
+            let imageUri, prediction, confidence, date, time;
+
+            // Intentar cargar primero desde localStorage (navegación desde results.html)
+            const detailData = localStorage.getItem('detail_view_data');
+            if (detailData) {
+                const data = JSON.parse(detailData);
+                imageUri = data.imageUri;
+                prediction = data.prediction;
+                confidence = data.confidence;
+                date = data.date;
+                time = data.time;
+                // Limpiar después de cargar
+                localStorage.removeItem('detail_view_data');
+            } else {
+                // Si no está en localStorage, intentar desde URL params (desde historial)
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+                
+                if (id) {
+                    const historyData = localStorage.getItem('prediction_history');
+                    if (historyData) {
+                        const history = JSON.parse(historyData);
+                        const item = history.find(h => h.id === id);
+                        if (item) {
+                            imageUri = item.imageUri;
+                            prediction = item.prediction;
+                            confidence = item.confidence;
+                            date = item.date;
+                            time = item.time;
+                        }
+                    }
+                }
+            }
+
+            // Si aún no hay datos, mostrar error
+            if (!imageUri || !prediction) {
+                showToast('❌', 'No se encontraron datos del análisis');
+                setTimeout(() => window.location.href = '/history', 2000);
+                return;
+            }
+
+            // Obtener info de la enfermedad
+            const disease = diseaseDatabase[prediction] || diseaseDatabase['Healthy'];
+
+            // Actualizar UI
+            document.getElementById('analysisImage').src = imageUri;
+            document.getElementById('analysisDate').textContent = `${date} • ${time}`;
+            document.getElementById('diseaseEmoji').textContent = disease.emoji;
+            document.getElementById('diseaseName').textContent = disease.name;
+            document.getElementById('diseaseSeverity').textContent = disease.severity;
+            document.getElementById('diseaseSeverity').style.color = disease.color;
+            
+            // Confidence bar con animación
+            setTimeout(() => {
+                const bar = document.getElementById('confidenceBar');
+                bar.style.width = `${confidence * 100}%`;
+                bar.style.backgroundColor = disease.color;
+            }, 100);
+            
+            document.getElementById('confidencePercent').textContent = `${(confidence * 100).toFixed(1)}%`;
+            document.getElementById('diseaseDescription').textContent = disease.description;
+            
+            // Stats
+            document.getElementById('statConfidence').textContent = `${(confidence * 100).toFixed(0)}%`;
+            
+            // Recommendations
+            const recList = document.getElementById('recommendationsList');
+            recList.innerHTML = disease.recommendations.map(rec => `
+                <li class="flex items-start gap-3">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
+                    <span class="text-slate-700 dark:text-slate-300 leading-relaxed">${rec}</span>
+                </li>
+            `).join('');
+        }
+
+        // Toast
+        function showToast(icon, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        // Compartir resultados
+        async function shareResults() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const prediction = urlParams.get('prediction');
+            const confidence = urlParams.get('confidence');
+            const disease = diseaseDatabase[prediction] || diseaseDatabase['Healthy'];
+            
+            const shareData = {
+                title: 'AgroScan - Análisis de Planta',
+                text: `${disease.emoji} ${disease.name}\nConfianza: ${(parseFloat(confidence) * 100).toFixed(1)}%\n\nAnálisis realizado con AgroScan`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    showToast('✅', 'Compartido exitosamente');
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        console.error('Error compartiendo:', err);
+                        copyToClipboard();
+                    }
+                }
+            } else {
+                copyToClipboard();
+            }
+        }
+
+        function copyToClipboard() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('📋', 'Enlace copiado al portapapeles');
+            }).catch(() => {
+                showToast('ℹ️', 'No se pudo compartir');
+            });
+        }
+
+        // Nuevo análisis
+        function newAnalysis() {
+            window.location.href = '/camera';
+        }
+
+        // Inicializar
+        loadData();
+    </script>
+{% endblock %}

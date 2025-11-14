@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}AgroScan - Términos y Condiciones{% endblock %}
+
+{% block active_page %}terms{% endblock %}
+
+{% block page_title %}Términos y Condiciones{% endblock %}
+{% block page_subtitle %}Políticas de uso de AgroScan{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-3">
+    <div class="relative">
+        <input type="text" placeholder="Buscar..." class="w-64 pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-slate-400 dark:placeholder-slate-500">
+        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+    </div>
+    
+    <div class="flex items-center gap-2">
+        <a href="/dashboard" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            Dashboard
+        </a>
+        
+        <a href="/terms" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-blue-500/30">
+            Términos y Condiciones
+        </a>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+                <!-- Decorative Elements -->
+                <div class="relative">
+                    <div class="absolute top-20 right-10 w-32 h-32 bg-emerald-400/20 dark:bg-emerald-400/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-40 left-10 w-40 h-40 bg-blue-400/20 dark:bg-blue-400/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 space-y-6">
+                
+                            <!-- Fecha -->
+                            <div class="text-sm text-slate-500 dark:text-slate-400 italic border-b border-slate-200 dark:border-slate-700 pb-4">
+                                Última actualización: Noviembre 2025
+                            </div>
+
+                            <!-- Sección 1 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">1</span>
+                                    Aceptación de los Términos
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    Al descargar, instalar o utilizar AgroScan ("la Aplicación"), usted acepta estar sujeto a estos 
+                                    Términos y Condiciones. Si no está de acuerdo con alguno de estos términos, no utilice la Aplicación.
+                                </p>
+                            </section>
+
+                            <!-- Sección 2 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">2</span>
+                                    Descripción del Servicio
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    AgroScan es una aplicación móvil de detección de enfermedades en hojas de maíz mediante inteligencia 
+                                    artificial. La aplicación utiliza tecnología de aprendizaje automático para analizar imágenes y 
+                                    proporcionar diagnósticos preliminares.
+                                </p>
+                            </section>
+
+                            <!-- Sección 3 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">3</span>
+                                    Uso de la Aplicación
+                                </h2>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">3.1 Propósito Informativo:</span> Los diagnósticos proporcionados por AgroScan 
+                                            son exclusivamente informativos y no deben considerarse como asesoramiento profesional definitivo.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">3.2 Funcionamiento Offline:</span> La aplicación funciona completamente offline 
+                                            una vez instalada. No requiere conexión a internet para realizar análisis.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">3.3 Precisión:</span> Si bien el modelo de IA ha sido entrenado con alta 
+                                            precisión (~98%), los resultados pueden variar según la calidad de la imagen y las condiciones de captura.
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Sección 4 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">4</span>
+                                    Privacidad y Datos
+                                </h2>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">4.1 Datos Locales:</span> Todas las imágenes y análisis se almacenan localmente 
+                                            en su dispositivo. No se envían datos a servidores externos.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">4.2 Permisos:</span> La aplicación requiere acceso a la cámara y galería 
+                                            únicamente para capturar y seleccionar imágenes de análisis.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                            <span class="font-semibold text-slate-900 dark:text-white">4.3 Biometría y PIN:</span> Los datos de autenticación (PIN, huella dactilar) 
+                                            se almacenan de forma segura y cifrada en su dispositivo.
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Sección 5 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">5</span>
+                                    Limitación de Responsabilidad
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed mb-3">
+                                    AgroScan y sus desarrolladores no se hacen responsables por:
+                                </p>
+                                <ul class="space-y-2 ml-4">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Decisiones tomadas basadas en los diagnósticos de la aplicación</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Pérdidas económicas derivadas del uso de la aplicación</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Diagnósticos incorrectos o imprecisos</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Problemas técnicos o mal funcionamiento del dispositivo</span>
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <!-- Sección 6 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">6</span>
+                                    Recomendaciones
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed mb-3">
+                                    Se recomienda encarecidamente:
+                                </p>
+                                <ul class="space-y-2 ml-4">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Consultar con un agrónomo o especialista antes de tomar decisiones importantes</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Utilizar la aplicación como herramienta complementaria, no sustitutiva</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Tomar fotos de buena calidad con iluminación adecuada</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-600 dark:text-emerald-400 mt-1">•</span>
+                                        <span class="text-slate-700 dark:text-slate-300">Mantener la aplicación actualizada a la última versión</span>
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <!-- Sección 7 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">7</span>
+                                    Propiedad Intelectual
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    Todo el contenido de la aplicación, incluyendo el modelo de IA, diseño, código y documentación, 
+                                    está protegido por derechos de autor y es propiedad de los desarrolladores de AgroScan.
+                                </p>
+                            </section>
+
+                            <!-- Sección 8 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">8</span>
+                                    Actualizaciones
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    Nos reservamos el derecho de actualizar estos términos en cualquier momento. Las actualizaciones 
+                                    importantes se notificarán a través de la aplicación.
+                                </p>
+                            </section>
+
+                            <!-- Sección 9 -->
+                            <section>
+                                <h2 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">9</span>
+                                    Contacto
+                                </h2>
+                                <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    Para preguntas, sugerencias o reportar problemas, puede contactarnos a través de los canales 
+                                    oficiales de soporte de AgroScan.
+                                </p>
+                            </section>
+
+                            <!-- Footer Message -->
+                            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl p-5 border-l-4 border-emerald-600 dark:border-emerald-500 mt-8">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                                        Al usar AgroScan, usted reconoce haber leído, entendido y aceptado estos términos y condiciones.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}

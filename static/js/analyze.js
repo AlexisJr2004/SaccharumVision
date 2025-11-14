@@ -1,16 +1,20 @@
 /**
  * 🍃 SaccharumVision - Análisis de Imágenes
  * ==========================================
- * 
- * JavaScript para manejar la subida de imágenes y análisis con el modelo
+ * JavaScript para manejo de subida, previsualización
+ * y análisis de imágenes mediante el modelo backend.
  */
 
-// Elementos del DOM
+// ============================================================
+//                      ELEMENTOS DEL DOM
+// ============================================================
+
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('dropzone-file');
 const uploadContent = document.getElementById('uploadContent');
 const previewImage = document.getElementById('previewImage');
 const actionButtons = document.getElementById('actionButtons');
+
 const analyzeBtn = document.getElementById('analyzeBtn');
 const clearBtn = document.getElementById('clearBtn');
 
@@ -24,109 +28,97 @@ const confidence = document.getElementById('confidence');
 const probabilitiesList = document.getElementById('probabilitiesList');
 const errorMessage = document.getElementById('errorMessage');
 
-// Variable para almacenar el archivo seleccionado
+// Archivo seleccionado
 let selectedFile = null;
 
-// Información de enfermedades
+// ============================================================
+//                      INFORMACIÓN DE ENFERMEDADES
+// ============================================================
+
 const diseaseInfoData = {
     'Healthy': {
         name: 'Saludable',
         icon: '✅',
-        description: 'La planta se encuentra en perfecto estado de salud. No se detectaron signos de enfermedades.',
-        recommendation: 'Mantén las prácticas de cultivo actuales y continúa con el monitoreo regular.'
+        description: 'La planta se encuentra en perfecto estado de salud.',
+        recommendation: 'Mantén prácticas de cultivo actuales.'
     },
     'Mosaic': {
         name: 'Mosaico',
         icon: '🦠',
-        description: 'Enfermedad viral que causa manchas claras y oscuras en las hojas, reduciendo la fotosíntesis.',
-        recommendation: 'Elimina las plantas infectadas, controla vectores (áfidos) y usa variedades resistentes.'
+        description: 'Enfermedad viral que genera manchas en hojas.',
+        recommendation: 'Elimina plantas infectadas y controla vectores.'
     },
     'RedRot': {
         name: 'Pudrición Roja',
         icon: '🔴',
-        description: 'Enfermedad fúngica severa que causa pudrición roja interna en el tallo.',
-        recommendation: 'Mejora el drenaje, aplica fungicidas y usa variedades resistentes. Destruye residuos infectados.'
+        description: 'Enfermedad fúngica severa del tallo.',
+        recommendation: 'Mejorar drenaje y usar fungicidas.'
     },
     'Rust': {
         name: 'Roya',
         icon: '🟤',
-        description: 'Enfermedad fúngica que causa pústulas de color marrón-rojizo en las hojas.',
-        recommendation: 'Aplica fungicidas sistémicos, mejora la ventilación y usa variedades resistentes.'
+        description: 'Pústulas marrón-rojizas en hojas.',
+        recommendation: 'Aplicar fungicidas sistémicos.'
     },
     'Yellow': {
         name: 'Amarillamiento',
         icon: '🟡',
-        description: 'Síntomas de estrés o deficiencias nutricionales que causan amarillamiento de hojas.',
-        recommendation: 'Verifica nutrición, riego y pH del suelo. Puede requerir fertilización adecuada.'
+        description: 'Estrés o deficiencia nutricional.',
+        recommendation: 'Revisar nutrición, riego y pH.'
     }
 };
 
-// =============================
-// Event Listeners
-// =============================
+// ============================================================
+//                    EVENTOS PRINCIPALES
+// ============================================================
 
 // Prevenir comportamiento por defecto en drag & drop
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    uploadArea.addEventListener(eventName, preventDefaults, false);
-    document.body.addEventListener(eventName, preventDefaults, false);
-});
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event =>
+    uploadArea.addEventListener(event, preventDefaults, false)
+);
+document.body.addEventListener('dragenter', preventDefaults, false);
+document.body.addEventListener('dragover', preventDefaults, false);
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
+// Efectos visuales del área de subida
+['dragenter', 'dragover'].forEach(event =>
+    uploadArea.addEventListener(event, () => uploadArea.classList.add('dragover'))
+);
 
-// Efectos visuales en drag & drop
-['dragenter', 'dragover'].forEach(eventName => {
-    uploadArea.addEventListener(eventName, () => {
-        uploadArea.classList.add('dragover');
-    }, false);
-});
+['dragleave', 'drop'].forEach(event =>
+    uploadArea.addEventListener(event, () => uploadArea.classList.remove('dragover'))
+);
 
-['dragleave', 'drop'].forEach(eventName => {
-    uploadArea.addEventListener(eventName, () => {
-        uploadArea.classList.remove('dragover');
-    }, false);
-});
-
-// Manejar drop de archivo
+// Evento al arrastrar archivo
 uploadArea.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        handleFile(files[0]);
-    }
-}, false);
-
-// Manejar selección de archivo
-fileInput.addEventListener('change', (e) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-        handleFile(files[0]);
-    }
+    if (e.dataTransfer.files.length > 0)
+        handleFile(e.dataTransfer.files[0]);
 });
 
-// Botón de analizar
-analyzeBtn.addEventListener('click', analyzeImage);
+// Evento de selección manual
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0)
+        handleFile(e.target.files[0]);
+});
 
-// Botón de limpiar
+// Botones principales
+analyzeBtn.addEventListener('click', analyzeImage);
 clearBtn.addEventListener('click', clearAll);
 
-// =============================
-// Funciones principales
-// =============================
+// ============================================================
+//                   FUNCIONES PRINCIPALES
+// ============================================================
 
 /**
- * Maneja el archivo seleccionado
+ * Maneja el archivo subido por el usuario.
  */
 function handleFile(file) {
-    // Validar tipo de archivo
+
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/bmp', 'image/tiff'];
     if (!validTypes.includes(file.type)) {
         showError('Tipo de archivo no soportado. Use JPG, PNG, BMP o TIFF.');
         return;
     }
 
-    // Validar tamaño (16MB)
     const maxSize = 16 * 1024 * 1024;
     if (file.size > maxSize) {
         showError('El archivo es demasiado grande. Máximo 16MB.');
@@ -139,18 +131,22 @@ function handleFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         previewImage.src = e.target.result;
+
         uploadContent.classList.add('hidden');
         previewImage.classList.remove('hidden');
+
         actionButtons.classList.remove('hidden');
         actionButtons.classList.add('flex');
+
         hideAllStates();
         initialState.classList.remove('hidden');
     };
+
     reader.readAsDataURL(file);
 }
 
 /**
- * Analiza la imagen con el modelo
+ * Envía la imagen al backend para análisis.
  */
 async function analyzeImage() {
     if (!selectedFile) {
@@ -158,17 +154,14 @@ async function analyzeImage() {
         return;
     }
 
-    // Mostrar estado de carga
     hideAllStates();
     loadingState.classList.remove('hidden');
     analyzeBtn.disabled = true;
 
     try {
-        // Crear FormData
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        // Enviar petición
         const response = await fetch('/api/predict', {
             method: 'POST',
             body: formData
@@ -176,72 +169,68 @@ async function analyzeImage() {
 
         const data = await response.json();
 
-        if (data.success) {
+        if (data.success)
             displayResults(data.prediction);
-        } else {
+        else
             showError(data.error || 'Error desconocido al analizar la imagen.');
-        }
 
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Error de conexión. Por favor intenta de nuevo.');
+    } catch (err) {
+        console.error('Error:', err);
+        showError('Error de conexión. Intenta de nuevo.');
     } finally {
         analyzeBtn.disabled = false;
     }
 }
 
 /**
- * Muestra los resultados del análisis
+ * Muestra los resultados entregados por el modelo.
  */
 function displayResults(prediction) {
     hideAllStates();
     resultsSection.classList.remove('hidden');
 
-    // Clase predicha y confianza
     const classInfo = diseaseInfoData[prediction.class] || {
         name: prediction.class,
         icon: '❓'
     };
 
     predictedClass.textContent = `${classInfo.icon} ${classInfo.name}`;
-    
-    // Usar el campo correcto de confianza (ya viene en porcentaje desde TTA)
+
     const confidenceValue = prediction.confidence || (prediction.probability * 100);
     confidence.textContent = `${confidenceValue.toFixed(1)}%`;
 
-    // Lista de probabilidades
     probabilitiesList.innerHTML = '';
-    for (const [className, probability] of Object.entries(prediction.all_probabilities)) {
+
+    for (const [className, prob] of Object.entries(prediction.all_probabilities)) {
         const info = diseaseInfoData[className] || { name: className, icon: '❓' };
-        const percentage = (probability * 100).toFixed(1);
-        
+        const pct = (prob * 100).toFixed(1);
+
         const item = document.createElement('div');
         item.className = 'mb-3';
         item.innerHTML = `
             <div class="flex justify-between items-center mb-1">
                 <span class="text-sm">${info.icon} ${info.name}</span>
-                <span class="text-sm font-semibold">${percentage}%</span>
+                <span class="text-sm font-semibold">${pct}%</span>
             </div>
             <div class="probability-bar">
-                <div class="probability-fill" style="width: ${percentage}%"></div>
+                <div class="probability-fill" style="width: ${pct}%"></div>
             </div>
         `;
+
         probabilitiesList.appendChild(item);
     }
 }
 
-/**
- * Muestra un error
- */
+// ============================================================
+//                       MANEJO DE ESTADOS
+// ============================================================
+
 function showError(message) {
     hideAllStates();
     errorState.classList.remove('hidden');
     errorMessage.textContent = message;
 }
 
-/**
- * Oculta todos los estados
- */
 function hideAllStates() {
     initialState.classList.add('hidden');
     loadingState.classList.add('hidden');
@@ -250,21 +239,24 @@ function hideAllStates() {
 }
 
 /**
- * Limpia todo
+ * Limpia la interfaz para un nuevo análisis.
  */
 function clearAll() {
     selectedFile = null;
     fileInput.value = '';
+
     previewImage.classList.add('hidden');
     uploadContent.classList.remove('hidden');
+
     actionButtons.classList.add('hidden');
     actionButtons.classList.remove('flex');
+
     hideAllStates();
     initialState.classList.remove('hidden');
 }
 
-// =============================
-// Inicialización
-// =============================
+// ============================================================
+//                        INICIALIZACIÓN
+// ============================================================
 
 console.log('🍃 SaccharumVision - Sistema de análisis cargado');

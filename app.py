@@ -1,451 +1,344 @@
-"""
-🍃 SaccharumVision - Aplicación Flask
-====================================
-
-Aplicación web Flask para análisis de imágenes de caña de azúcar
-usando modelos de Deep Learning.
-
-Autor: Sistema de Visión Agrónoma
-Fecha: 2025
+﻿"""
+===============================================================
+  AgroScan / SaccharumVision - Backend Flask
+  Sistema de análisis de enfermedades en caña de azúcar usando IA
+===============================================================
 """
 
-import os
-import json
-from flask import Flask, render_template, request, jsonify, url_for
+# ------------------------------
+# Importaciones principales
+# ------------------------------
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+from datetime import datetime
 import logging
+import os
+import sys
 
-# Importar configuración y utilidades
-from config.config import config, validate_paths
-from utils.model_manager import ModelManager
+# ------------------------------
+# Configuración de rutas del proyecto
+# (permite importar módulos desde utils/)
+# ------------------------------
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# ============================
-# INICIALIZACIÓN DE LA APP
-# ============================
+# ------------------------------
+# Importación del gestor de modelos
+# ------------------------------
+try:
+    from utils.model_manager import ModelManager
+    MODEL_AVAILABLE = True
+except ImportError as e:
+    print(f"Advertencia: No se pudo importar ModelManager: {e}")
+    MODEL_AVAILABLE = False
+
+# ------------------------------
+# Configuración de la aplicación Flask
+# ------------------------------
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "agroscan_key_2024"
+app.config["UPLOAD_FOLDER"] = "uploads"
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB
 
-# Cargar configuración (desarrollo por defecto)
-env = os.environ.get('FLASK_ENV', 'development')
-app.config.from_object(config[env])
-
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(asctime)s] %(levelname)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+# ------------------------------
+# Configuración del sistema de logs
+# ------------------------------
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ============================
-# INICIALIZACIÓN DEL MODELO
-# ============================
-model_manager = None
+# ------------------------------
+# Crear carpetas necesarias
+# ------------------------------
+os.makedirs("uploads", exist_ok=True)
+os.makedirs("static", exist_ok=True)
 
-def init_model():
+# ------------------------------
+# Extensiones permitidas
+# ------------------------------
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "webp"}
+
+# ------------------------------
+# Configuración de modelos disponibles
+# ------------------------------
+MODELS_CONFIG = {
+    "ResNet50": {
+        "path": "models/ResNet50/ResNet50_latest.keras",
+        "classes": "models/ResNet50/classes_latest.json",
+        "size": (224, 224),
+        "description": "Equilibrado y confiable"
+    },
+    "EfficientNetB0": {
+        "path": "models/EfficientNetB0/EfficientNetB0_latest.keras",
+        "classes": "models/EfficientNetB0/classes_latest.json",
+        "size": (256, 256),
+        "description": "Eficiente y preciso"
+    },
+    "MobileNetV2": {
+        "path": "models/MobileNetV2/MobileNetV2_latest.keras",
+        "classes": "models/MobileNetV2/classes_classes.json",
+        "size": (256, 256),
+        "description": "Rápido y ligero"
+    }
+}
+
+# ------------------------------
+# Cache de modelos cargados
+# ------------------------------
+loaded_models = {}
+
+# ------------------------------
+# Función para obtener o cargar un modelo
+# ------------------------------
+def get_model_manager(model_name="ResNet50"):
     """
-    Inicializa el modelo de predicción
+    Devuelve el gestor de un modelo ya cargado o lo carga si no existe en caché.
     """
-    global model_manager
+    if model_name not in MODELS_CONFIG:
+        logger.warning(f"Modelo {model_name} no existe. Usando ResNet50 por defecto.")
+        model_name = "ResNet50"
+
+    # Si ya está cargado, devolverlo
+    if model_name in loaded_models:
+        logger.info(f"♻️ Usando modelo {model_name} desde caché")
+        return loaded_models[model_name]
+
+    # Cargar modelo nuevo
     try:
-        logger.info("🔄 Inicializando modelo de predicción...")
+        config = MODELS_CONFIG[model_name]
+        logger.info(f"📦 Cargando modelo {model_name}...")
+
         model_manager = ModelManager(
-            model_path=app.config['MODEL_PATH'],
-            classes_path=app.config['CLASSES_PATH'],
-            img_size=app.config['IMG_SIZE']
+            model_path=config["path"],
+            classes_path=config["classes"],
+            img_size=config["size"],
+            model_type=model_name  # NUEVO: Pasar tipo de modelo
         )
-        logger.info("✅ Modelo cargado exitosamente")
-        return True
+
+        loaded_models[model_name] = model_manager
+        logger.info(f"✅ Modelo {model_name} cargado correctamente")
+
+        return model_manager
+
     except Exception as e:
-        logger.error(f"❌ Error al cargar el modelo: {str(e)}")
-        return False
+        logger.error(f"❌ Error al cargar modelo {model_name}: {e}")
+        return None
 
-# ============================
-# FUNCIONES AUXILIARES
-# ============================
+# ------------------------------
+# Inicializar modelo por defecto
+# ------------------------------
+model_manager = get_model_manager("ResNet50") if MODEL_AVAILABLE else None
+
+# ------------------------------
+# Utilidad: validar extensión de archivo
+# ------------------------------
 def allowed_file(filename):
-    """
-    Verifica si la extensión del archivo es permitida
-    """
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ============================
-# RUTAS DE LA APLICACIÓN
-# ============================
 
-@app.route('/')
-def index():
-    """
-    Ruta principal - Muestra la página de inicio
-    """
-    return render_template('index.html')
+# ==============================================================
+#                   RUTAS DE PÁGINAS (HTML)
+# ==============================================================
 
-@app.route('/analyze')
-def analyze():
-    """
-    Ruta de análisis - Muestra la página de análisis de imágenes
-    """
-    return render_template('analyze.html')
+@app.route("/")
+def index(): return render_template("index.html")
 
-@app.route('/api/predict', methods=['POST'])
+@app.route("/camera")
+def camera(): return render_template("camera.html")
+
+@app.route("/history")
+def history(): return render_template("history.html")
+
+@app.route("/history_details")
+def history_details(): return render_template("history_details.html")
+
+@app.route("/results")
+def results(): return render_template("results.html")
+
+@app.route("/settings")
+def settings(): return render_template("settings.html")
+
+@app.route("/terms")
+def terms(): return render_template("terms.html")
+
+
+# ==============================================================
+#                       ENDPOINT: PREDICCIÓN
+# ==============================================================
+
+@app.route("/api/predict", methods=["POST"])
 def predict():
     """
-    API endpoint para realizar predicciones usando TTA
-    
-    Espera:
-    - POST request con una imagen en 'file'
-    - Parámetros opcionales:
-        * use_tta: (opcional) usar Test Time Augmentation (default: True)
-        * threshold: (opcional) umbral de confianza (default: 0.70)
-        * num_augmentations: (opcional) número de aumentaciones (default: 5)
-    
-    Retorna:
-    - JSON con la predicción mejorada usando TTA
+    Endpoint para analizar imágenes y predecir enfermedades.
+    Acepta archivos enviados como 'image' o 'file' en FormData.
     """
     try:
-        # Verificar que se envió un archivo
-        if 'file' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': 'No se envió ningún archivo'
-            }), 400
-        
-        file = request.files['file']
-        
-        # Verificar que el archivo tiene nombre
-        if file.filename == '':
-            return jsonify({
-                'success': False,
-                'error': 'El archivo no tiene nombre'
-            }), 400
-        
-        # Verificar que el modelo está cargado
-        if model_manager is None:
-            return jsonify({
-                'success': False,
-                'error': 'El modelo no está cargado. Por favor reinicie el servidor.'
-            }), 500
-        
-        # Verificar que el archivo es válido
-        if file and allowed_file(file.filename):
-            # Guardar el archivo de forma segura
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            # Obtener parámetros opcionales (por defecto usa TTA)
-            use_tta = request.form.get('use_tta', 'true').lower() == 'true'
-            threshold = float(request.form.get('threshold', 0.70))
-            num_augmentations = int(request.form.get('num_augmentations', 5))
-            
-            logger.info(f"📷 Procesando imagen con TTA: {filename}")
-            logger.info(f"   • TTA: {use_tta}, Threshold: {threshold}, Augmentations: {num_augmentations}")
-            
-            # Realizar predicción mejorada con TTA
-            prediction = model_manager.improved_predict(
-                image_path=filepath,
-                use_tta=use_tta,
-                threshold=threshold,
-                num_augmentations=num_augmentations
-            )
-            
-            # Preparar respuesta
-            response = {
-                'success': prediction['status'] in ['success', 'warning'],
-                'status': prediction['status'],
-                'filename': filename,
-                'image_url': url_for('static', filename=f'../uploads/{filename}'),
-                'prediction': {
-                    'class': prediction.get('class', 'Unknown'),
-                    'confidence': float(prediction.get('confidence', 0)),
-                    'probability': float(prediction.get('probability', 0)),
-                    'method': prediction.get('method', 'TTA'),
-                    'message': prediction.get('message', ''),
-                    'all_probabilities': {
-                        k: float(v) for k, v in prediction.get('probabilities', {}).items()
-                    },
-                    'top_3': prediction.get('top_3', [])
-                }
-            }
-            
-            if prediction['status'] == 'success':
-                logger.info(f"✅ Predicción TTA: {prediction['class']} ({prediction['confidence']:.2f}%)")
-            elif prediction['status'] == 'warning':
-                logger.warning(f"⚠️ Predicción con baja confianza: {prediction['class']} ({prediction['confidence']:.2f}%)")
-            
-            return jsonify(response), 200
-        
-        else:
-            return jsonify({
-                'success': False,
-                'error': f'Tipo de archivo no permitido. Use: {", ".join(app.config["ALLOWED_EXTENSIONS"])}'
-            }), 400
-    
-    except Exception as e:
-        logger.error(f"❌ Error en predicción: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'Error al procesar la imagen: {str(e)}'
-        }), 500
+        # Obtener archivo enviado
+        file = request.files.get('image') or request.files.get('file')
 
-@app.route('/api/health', methods=['GET'])
+        if not file or file.filename == "":
+            return jsonify({"success": False, "error": "No se envió una imagen válida"}), 400
+
+        if not allowed_file(file.filename):
+            return jsonify({"success": False, "error": "Formato no permitido"}), 400
+
+        # Guardar imagen con timestamp
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{filename}"
+
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        logger.info(f"📸 Imagen guardada: {filename}")
+
+        # Leer parámetros extra
+        use_tta = request.form.get('use_tta', 'false').lower() == 'true'
+        selected_model = request.form.get('model', 'ResNet50')
+
+        # Obtener modelo seleccionado
+        current_model = get_model_manager(selected_model)
+
+        # Si el modelo está disponible → analizar imagen
+        if current_model:
+            try:
+                logger.info(f"🔍 Ejecutando predicción con {selected_model} (TTA={use_tta})")
+
+                result = current_model.improved_predict(
+                    image_path=filepath,
+                    use_tta=use_tta,
+                    threshold=0.50,
+                    num_augmentations=8 if use_tta else 0
+                )
+
+                if result and result.get('status') in ['success', 'warning']:
+                    return jsonify({
+                        "success": True,
+                        "filename": filename,
+                        "timestamp": timestamp,
+                        "prediction": {
+                            "class": result['class'],
+                            "confidence": result['confidence'],
+                            "probability": result.get('probability', result['confidence'] / 100),
+                            "method": result.get('method', "Predicción estándar"),
+                            "top_3": result.get('top_3', []),
+                            "all_probabilities": result.get('probabilities', {})
+                        },
+                        "status": result['status'],
+                        "tta_used": use_tta,
+                        "model_used": selected_model
+                    })
+
+                return jsonify({"success": False, "error": result.get("message")}), 500
+
+            except Exception as e:
+                logger.error(f"❌ Error en la predicción: {e}")
+                return jsonify({"success": False, "error": "Error analizando imagen"}), 500
+
+        # Si no hay modelo, ejecutar modo simulación
+        mock_predictions = [
+            {"class": "Healthy", "confidence": 85.5, "probability": 0.855},
+            {"class": "Mosaic", "confidence": 10.2, "probability": 0.102},
+            {"class": "Rust", "confidence": 4.3, "probability": 0.043},
+        ]
+
+        return jsonify({
+            "success": True,
+            "filename": filename,
+            "prediction": mock_predictions[0],
+            "status": "success",
+            "message": "Simulación realizada (modelo no cargado)"
+        })
+
+    except Exception as e:
+        logger.error(f"❌ Error interno: {e}")
+        return jsonify({"success": False, "error": "Error interno del servidor"}), 500
+
+
+# ==============================================================
+#                    ENDPOINTS AUXILIARES
+# ==============================================================
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    """Devuelve archivos almacenados en /uploads."""
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    """Devuelve archivos estáticos."""
+    return send_from_directory("static", filename)
+
+@app.route("/api/health")
 def health():
-    """
-    Endpoint de salud - Verifica que la API esté funcionando
-    """
-    model_loaded = model_manager is not None
-    
+    """Estado general del servidor."""
     return jsonify({
-        'status': 'healthy' if model_loaded else 'unhealthy',
-        'model_loaded': model_loaded,
-        'version': '1.0.0'
-    }), 200 if model_loaded else 503
+        "status": "OK",
+        "timestamp": datetime.now().isoformat(),
+        "model_loaded": model_manager is not None,
+        "models_available": list(MODELS_CONFIG.keys()),
+        "version": "1.0.0"
+    })
 
-@app.route('/api/classes', methods=['GET'])
-def get_classes():
-    """
-    Endpoint para obtener las clases disponibles
-    """
-    if model_manager is None:
-        return jsonify({
-            'success': False,
-            'error': 'El modelo no está cargado'
-        }), 500
-    
+@app.route("/api/models")
+def available_models():
+    """Lista completa de modelos disponibles."""
+    models_info = {
+        name: {
+            "name": name,
+            "description": cfg["description"],
+            "loaded": name in loaded_models,
+            "available": os.path.exists(cfg["path"])
+        }
+        for name, cfg in MODELS_CONFIG.items()
+    }
+
     return jsonify({
-        'success': True,
-        'classes': model_manager.get_classes()
-    }), 200
+        "success": True,
+        "models": models_info,
+        "default": "ResNet50"
+    })
 
-@app.route('/api/predict-improved', methods=['POST'])
-def predict_improved():
-    """
-    API endpoint para realizar predicciones mejoradas con TTA
-    
-    Espera:
-    - POST request con:
-        * 'file': imagen a analizar
-        * 'use_tta': (opcional) usar Test Time Augmentation (default: True)
-        * 'threshold': (opcional) umbral de confianza (default: 0.70)
-        * 'num_augmentations': (opcional) número de aumentaciones (default: 5)
-    
-    Retorna:
-    - JSON con la predicción mejorada, top 3 y estado
-    """
-    try:
-        # Verificar que se envió un archivo
-        if 'file' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': 'No se envió ningún archivo'
-            }), 400
-        
-        file = request.files['file']
-        
-        # Verificar que el archivo tiene nombre
-        if file.filename == '':
-            return jsonify({
-                'success': False,
-                'error': 'El archivo no tiene nombre'
-            }), 400
-        
-        # Verificar que el modelo está cargado
-        if model_manager is None:
-            return jsonify({
-                'success': False,
-                'error': 'El modelo no está cargado. Por favor reinicie el servidor.'
-            }), 500
-        
-        # Verificar que el archivo es válido
-        if file and allowed_file(file.filename):
-            # Guardar el archivo de forma segura
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            # Obtener parámetros opcionales
-            use_tta = request.form.get('use_tta', 'true').lower() == 'true'
-            threshold = float(request.form.get('threshold', 0.70))
-            num_augmentations = int(request.form.get('num_augmentations', 5))
-            
-            logger.info(f"📷 Procesando imagen con predicción mejorada: {filename}")
-            logger.info(f"   • TTA: {use_tta}, Threshold: {threshold}, Augmentations: {num_augmentations}")
-            
-            # Realizar predicción mejorada
-            prediction = model_manager.improved_predict(
-                image_path=filepath,
-                use_tta=use_tta,
-                threshold=threshold,
-                num_augmentations=num_augmentations
-            )
-            
-            # Preparar respuesta
-            response = {
-                'success': prediction['status'] in ['success', 'warning'],
-                'status': prediction['status'],
-                'filename': filename,
-                'image_url': url_for('static', filename=f'../uploads/{filename}'),
-                'prediction': {
-                    'class': prediction.get('class', 'Unknown'),
-                    'confidence': float(prediction.get('confidence', 0)),
-                    'probability': float(prediction.get('probability', 0)),
-                    'method': prediction.get('method', 'Unknown'),
-                    'message': prediction.get('message', ''),
-                    'all_probabilities': {
-                        k: float(v) for k, v in prediction.get('probabilities', {}).items()
-                    },
-                    'top_3': prediction.get('top_3', [])
-                }
-            }
-            
-            if prediction['status'] == 'success':
-                logger.info(f"✅ Predicción mejorada: {prediction['class']} ({prediction['confidence']:.2f}%)")
-            elif prediction['status'] == 'warning':
-                logger.warning(f"⚠️ Predicción con baja confianza: {prediction['class']} ({prediction['confidence']:.2f}%)")
-            
-            return jsonify(response), 200
-        
-        else:
-            return jsonify({
-                'success': False,
-                'error': f'Tipo de archivo no permitido. Use: {", ".join(app.config["ALLOWED_EXTENSIONS"])}'
-            }), 400
-    
-    except Exception as e:
-        logger.error(f"❌ Error en predicción mejorada: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'Error al procesar la imagen: {str(e)}'
-        }), 500
+@app.route("/api/info")
+def app_info():
+    """Información del sistema y sus capacidades."""
+    return jsonify({
+        "name": "AgroScan / SaccharumVision",
+        "description": "Sistema de análisis de enfermedades en plantas usando IA",
+        "version": "1.0.0",
+        "model_loaded": model_manager is not None,
+        "endpoints": {
+            "pages": ["/", "/camera", "/history", "/results"],
+            "api": ["/api/predict", "/api/health", "/api/info"]
+        }
+    })
 
-@app.route('/api/predict-top3', methods=['POST'])
-def predict_top3():
-    """
-    API endpoint para obtener las 3 mejores predicciones
-    
-    Espera:
-    - POST request con una imagen en 'file'
-    
-    Retorna:
-    - JSON con el top 3 de predicciones
-    """
-    try:
-        # Verificar que se envió un archivo
-        if 'file' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': 'No se envió ningún archivo'
-            }), 400
-        
-        file = request.files['file']
-        
-        if file.filename == '':
-            return jsonify({
-                'success': False,
-                'error': 'El archivo no tiene nombre'
-            }), 400
-        
-        if model_manager is None:
-            return jsonify({
-                'success': False,
-                'error': 'El modelo no está cargado'
-            }), 500
-        
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            logger.info(f"📷 Obteniendo Top-3 para: {filename}")
-            
-            # Obtener top 3
-            top_3 = model_manager.get_top_3_predictions(filepath)
-            
-            if top_3 is None:
-                return jsonify({
-                    'success': False,
-                    'error': 'Error al procesar la imagen'
-                }), 500
-            
-            return jsonify({
-                'success': True,
-                'filename': filename,
-                'image_url': url_for('static', filename=f'../uploads/{filename}'),
-                'top_3': top_3
-            }), 200
-        
-        else:
-            return jsonify({
-                'success': False,
-                'error': f'Tipo de archivo no permitido'
-            }), 400
-    
-    except Exception as e:
-        logger.error(f"❌ Error en top-3: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
 
-# ============================
-# MANEJO DE ERRORES
-# ============================
+# ==============================================================
+#                     MANEJO DE ERRORES
+# ==============================================================
 
 @app.errorhandler(404)
 def not_found(error):
-    """Manejo de error 404"""
-    return render_template('404.html'), 404
+    return render_template("index.html"), 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    """Manejo de error 500"""
-    logger.error(f"Error 500: {str(error)}")
-    return render_template('500.html'), 500
+    logger.error(f"Error 500: {error}")
+    return jsonify({"error": "Error interno del servidor"}), 500
 
-@app.errorhandler(413)
-def too_large(error):
-    """Manejo de archivos muy grandes"""
-    return jsonify({
-        'success': False,
-        'error': 'El archivo es demasiado grande. Máximo 16MB'
-    }), 413
 
-# ============================
-# PUNTO DE ENTRADA
-# ============================
+# ==============================================================
+#                   EJECUCIÓN DEL SERVIDOR
+# ==============================================================
 
-if __name__ == '__main__':
-    # Validar rutas críticas
-    logger.info("🔍 Validando rutas del proyecto...")
-    path_errors = validate_paths()
-    
-    if path_errors:
-        logger.error("❌ Errores encontrados:")
-        for error in path_errors:
-            logger.error(f"  - {error}")
-        logger.error("Por favor corrija los errores antes de continuar")
-    else:
-        logger.info("✅ Todas las rutas validadas correctamente")
-        
-        # Inicializar modelo
-        if init_model():
-            logger.info(f"🚀 Iniciando servidor en http://{app.config['HOST']}:{app.config['PORT']}")
-            logger.info("📊 Endpoints disponibles:")
-            logger.info("  - GET  /                     → Página principal")
-            logger.info("  - GET  /analyze              → Página de análisis")
-            logger.info("  - POST /api/predict          → ⭐ Predicción con TTA (MEJORADA)")
-            logger.info("  - POST /api/predict-improved → Predicción mejorada con TTA (alternativa)")
-            logger.info("  - POST /api/predict-top3     → Top 3 predicciones")
-            logger.info("  - GET  /api/health           → Estado del servidor")
-            logger.info("  - GET  /api/classes          → Clases disponibles")
-            logger.info("")
-            logger.info("✨ TTA (Test Time Augmentation) activado por defecto para mayor precisión")
-            
-            # Iniciar servidor
-            app.run(
-                host=app.config['HOST'],
-                port=app.config['PORT'],
-                debug=app.config['DEBUG']
-            )
-        else:
-            logger.error("❌ No se pudo inicializar el modelo. Saliendo...")
+if __name__ == "__main__":
+    print("=" * 60)
+    print("🚀 Iniciando AgroScan / SaccharumVision")
+    print("=" * 60)
+    print(f"📂 Uploads: {app.config['UPLOAD_FOLDER']}")
+    print(f"🤖 Modelos disponibles:")
+    for model_name, config in MODELS_CONFIG.items():
+        status = "✅" if os.path.exists(config["path"]) else "❌"
+        print(f"  {status} {model_name} — {config['description']}")
+    print("🌐 http://localhost:5000")
+    print("=" * 60)
+
+    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)

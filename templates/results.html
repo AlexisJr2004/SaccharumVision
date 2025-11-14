@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}AgroScan - Resultados{% endblock %}
+
+{% block active_page %}camera{% endblock %}
+
+{% block page_title %}Resultados del Análisis{% endblock %}
+{% block page_subtitle %}Diagnóstico completado{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-3">
+    <div class="relative">
+        <input type="text" placeholder="Buscar..." class="w-64 pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-slate-400 dark:placeholder-slate-500">
+        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+    </div>
+    
+    <div class="flex items-center gap-2">
+        <a href="/camera" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            Escaner
+        </a>
+        
+        <a href="/results" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-blue-500/30">
+            Resultados
+        </a>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<!-- Decorative Elements -->
+<div class="relative">
+    <div class="absolute top-20 right-10 w-32 h-32 bg-emerald-400/20 dark:bg-emerald-400/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-40 left-10 w-40 h-40 bg-blue-400/20 dark:bg-blue-400/10 rounded-full blur-3xl"></div>
+    
+    <div class="relative z-10 space-y-6" id="mainContent">
+        <!-- Layout Principal: Imagen a la izquierda, contenido a la derecha -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Columna Izquierda: Imagen -->
+            <div class="space-y-6">
+                <!-- Image Section -->
+                <div class="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 flex items-center justify-center" style="height: 400px;">
+                    <img id="resultImage" src="" alt="Análisis" class="w-full h-full object-contain">
+                    <div class="absolute top-4 right-4 bg-black/70 dark:bg-black/80 backdrop-blur px-3 py-2 rounded-xl flex items-center gap-2">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span id="processingTime" class="text-white text-sm font-semibold"></span>
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+        <div class="flex gap-3">
+            <button onclick="newAnalysis()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-3xl font-semibold shadow-xl shadow-emerald-500/30 hover:shadow-2xl transition flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Nuevo Análisis
+            </button>
+            <button onclick="shareResults()" class="flex-1 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl text-emerald-600 dark:text-emerald-400 rounded-3xl font-semibold shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl transition flex items-center justify-center gap-2 border-2 border-emerald-600/60 dark:border-emerald-500/60">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                Compartir
+            </button>
+            
+        </div>
+            <button onclick="viewDetails()" class="w-full py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl text-blue-600 dark:text-blue-400 rounded-3xl font-semibold shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl transition border border-slate-200/60 dark:border-slate-700/60">
+                Ver Detalles Completos →
+            </button> 
+
+            </div>
+            <!-- Columna Derecha: Diagnóstico y otros resultados -->
+            <div class="space-y-6">
+                <!-- Stats Summary -->
+                <div class="bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 backdrop-blur-xl rounded-3xl p-5 border border-emerald-200/60 dark:border-emerald-700/40 shadow-xl shadow-emerald-200/50 dark:shadow-emerald-900/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="font-semibold text-slate-800 dark:text-white">Análisis Completado</span>
+                        </div>
+                        <span id="usedTTA" class="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg font-semibold"></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mt-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400" id="statAccuracy">98%</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Precisión</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="statModel">IA</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1" id="statModelName">ResNet50</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="statTime">2s</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Tiempo</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Main Result -->
+                <div class="space-y-3">
+                    <div class="text-slate-800 dark:text-white font-bold text-xl ml-2">Diagnóstico Principal</div>
+                    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl transition">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div id="mainEmoji" class="text-6xl"></div>
+                            <div class="flex-1">
+                                <h2 id="mainDisease" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
+                                <p id="mainSeverity" class="text-slate-600 dark:text-slate-400 mb-1"></p>
+                                <p id="mainDescription" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- Confidence Bar -->
+                        <div class="pt-5 border-t border-slate-200 dark:border-slate-700">
+                            <div class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Confianza del Diagnóstico</div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1 h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div id="mainConfidenceBar" class="h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                                </div>
+                                <div id="mainConfidencePercent" class="text-xl font-bold text-slate-800 dark:text-white w-16 text-right"></div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Recommendations -->
+                        <div class="mt-5 pt-5 border-t border-slate-200 dark:border-slate-700">
+                            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Acción Recomendada
+                            </div>
+                            <p id="quickRecommendation" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Probability Distribution -->
+                <div id="probabilitySection" class="space-y-3">
+                    <div class="text-slate-800 dark:text-white font-bold text-lg ml-2">Distribución de Probabilidades</div>
+                    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+                        <div id="probabilitiesList" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- Other Predictions (Top 3) -->
+                <div id="otherPredictions" class="space-y-3 hidden">
+                    <div class="text-slate-800 dark:text-white font-bold text-lg ml-2">Top 3 Predicciones</div>
+                    <div id="alternativesList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        
+
+
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-6 py-3 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/60 dark:border-slate-700/60 hidden z-50">
+    <div class="flex items-center gap-2">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage" class="font-semibold text-slate-800 dark:text-white"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        // Base de datos de enfermedades
+        const diseaseDatabase = {
+            'Healthy': {
+                name: 'Saludable',
+                emoji: '🌱',
+                severity: 'Ninguna',
+                color: '#10B981',
+                description: 'La planta está en perfecto estado de salud sin signos de enfermedades.',
+                quickRec: 'Mantener el cuidado actual. Continuar con el régimen de riego y fertilización.'
+            },
+            'Mosaic': {
+                name: 'Mosaico',
+                emoji: '🦠',
+                severity: 'Media',
+                color: '#F97316',
+                description: 'Virus del mosaico detectado. Causa patrones de decoloración en las hojas.',
+                quickRec: 'Aislar la planta inmediatamente. Eliminar hojas afectadas y controlar insectos vectores.'
+            },
+            'RedRot': {
+                name: 'Podredumbre Roja',
+                emoji: '🍂',
+                severity: 'Alta',
+                color: '#EF4444',
+                description: 'Infección fúngica grave que afecta raíces y tallos.',
+                quickRec: 'URGENTE: Mejorar drenaje, reducir riego y aplicar fungicida sistémico.'
+            },
+            'Rust': {
+                name: 'Roya',
+                emoji: '🔶',
+                severity: 'Media-Alta',
+                color: '#FB923C',
+                description: 'Hongo que produce pústulas naranjas en hojas.',
+                quickRec: 'Aplicar fungicida para roya. Mejorar circulación de aire y remover hojas infectadas.'
+            },
+            'Yellow': {
+                name: 'Amarillamiento',
+                emoji: '⚠️',
+                severity: 'Media',
+                color: '#F59E0B',
+                description: 'Amarillamiento que puede indicar deficiencias o problemas de riego.',
+                quickRec: 'Verificar niveles de nitrógeno y pH del suelo. Revisar programa de fertilización.'
+            }
+        };
+
+        let currentResultData = null;
+
+        // Cargar resultados
+        function loadResults() {
+            const resultData = localStorage.getItem('latest_result');
+            if (!resultData) {
+                showToast('❌', 'No se encontraron resultados');
+                setTimeout(() => window.location.href = '/camera', 2000);
+                return;
+            }
+
+            currentResultData = JSON.parse(resultData);
+            const { imageUri, predictions, processingTime, usedTTA } = currentResultData;
+
+            // Imagen
+            document.getElementById('resultImage').src = imageUri;
+            document.getElementById('processingTime').textContent = `${processingTime}ms`;
+
+            // Predicción principal
+            const topPred = predictions[0];
+            const disease = diseaseDatabase[topPred.disease] || diseaseDatabase['Healthy'];
+
+            // Mostrar distribución de probabilidades si está disponible
+            if (currentResultData.allProbabilities) {
+                displayProbabilityDistribution(currentResultData.allProbabilities);
+            }
+
+            document.getElementById('mainEmoji').textContent = disease.emoji;
+            document.getElementById('mainDisease').textContent = disease.name;
+            document.getElementById('mainSeverity').innerHTML = `Severidad: <span style="color: ${disease.color}; font-weight: 600;">${disease.severity}</span>`;
+            document.getElementById('mainDescription').textContent = disease.description;
+            document.getElementById('quickRecommendation').textContent = disease.quickRec;
+
+            // Barra de confianza con animación
+            setTimeout(() => {
+                const bar = document.getElementById('mainConfidenceBar');
+                bar.style.width = `${topPred.confidence * 100}%`;
+                bar.style.backgroundColor = disease.color;
+            }, 100);
+            
+            document.getElementById('mainConfidencePercent').textContent = `${(topPred.confidence * 100).toFixed(1)}%`;
+
+            // Stats
+            document.getElementById('statAccuracy').textContent = `${(topPred.confidence * 100).toFixed(0)}%`;
+            document.getElementById('statTime').textContent = processingTime < 1000 ? `${processingTime}ms` : `${(processingTime/1000).toFixed(1)}s`;
+            document.getElementById('usedTTA').textContent = usedTTA ? 'TTA Activado' : 'Modo Rápido';
+            
+            // Mostrar modelo usado
+            if (currentResultData.modelUsed) {
+                document.getElementById('statModel').textContent = '🤖';
+                document.getElementById('statModelName').textContent = currentResultData.modelUsed;
+            }
+
+            // Otras predicciones
+            if (predictions.length > 1) {
+                document.getElementById('otherPredictions').classList.remove('hidden');
+                const altList = document.getElementById('alternativesList');
+                
+                predictions.slice(1, 3).forEach(pred => {
+                    const altDisease = diseaseDatabase[pred.disease] || diseaseDatabase['Healthy'];
+                    const altCard = document.createElement('div');
+                    altCard.className = 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-4 border border-slate-200/60 dark:border-slate-700/60 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl transition flex items-center gap-3';
+                    altCard.innerHTML = `
+                        <div class="text-4xl">${altDisease.emoji}</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-slate-800 dark:text-white mb-2">${altDisease.name}</div>
+                            <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" style="width: ${pred.confidence * 100}%; background: ${altDisease.color}"></div>
+                            </div>
+                        </div>
+                        <div class="text-lg font-bold text-slate-600 dark:text-slate-300">${(pred.confidence * 100).toFixed(1)}%</div>
+                    `;
+                    altList.appendChild(altCard);
+                });
+            }
+
+            // Guardar en historial automáticamente
+            saveToHistory();
+        }
+
+        // Mostrar distribución de probabilidades
+        function displayProbabilityDistribution(allProbs) {
+            const probsList = document.getElementById('probabilitiesList');
+            if (!probsList || !allProbs) return;
+
+            // Convertir a array y ordenar por probabilidad
+            const sortedProbs = Object.entries(allProbs)
+                .sort((a, b) => b[1] - a[1]);
+
+            probsList.innerHTML = '';
+
+            sortedProbs.forEach(([className, probability]) => {
+                const disease = diseaseDatabase[className] || diseaseDatabase['Healthy'];
+                const percentage = (probability * 100).toFixed(2);
+                const barWidth = percentage;
+
+                const item = document.createElement('div');
+                item.className = 'space-y-2';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <span class="text-2xl">${disease.emoji}</span>
+                            ${disease.name}
+                        </span>
+                        <span class="text-sm font-bold text-slate-800 dark:text-white">${percentage}%</span>
+                    </div>
+                    <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-700" 
+                             style="width: ${barWidth}%; background: ${disease.color};"></div>
+                    </div>
+                `;
+                probsList.appendChild(item);
+            });
+        }
+
+        // Guardar en historial
+        function saveToHistory() {
+            if (!currentResultData) return;
+
+            try {
+                const { imageUri, predictions } = currentResultData;
+                const topPred = predictions[0];
+                const now = new Date();
+
+                const newEntry = {
+                    id: Date.now().toString(),
+                    imageUri: imageUri,
+                    prediction: topPred.disease,
+                    confidence: topPred.confidence,
+                    date: now.toLocaleDateString(),
+                    time: now.toLocaleTimeString()
+                };
+
+                const historyData = localStorage.getItem('prediction_history');
+                const history = historyData ? JSON.parse(historyData) : [];
+                
+                // Evitar duplicados (mismo timestamp)
+                if (!history.some(h => h.id === newEntry.id)) {
+                    history.push(newEntry);
+                    localStorage.setItem('prediction_history', JSON.stringify(history));
+                    console.log('✅ Guardado en historial');
+                }
+            } catch (error) {
+                console.error('Error guardando historial:', error);
+            }
+        }
+
+        // Toast
+        function showToast(icon, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        // Compartir resultados
+        async function shareResults() {
+            if (!currentResultData) return;
+
+            const { predictions } = currentResultData;
+            const topPred = predictions[0];
+            const disease = diseaseDatabase[topPred.disease];
+            
+            const shareData = {
+                title: 'AgroScan - Resultado del Análisis',
+                text: `${disease.emoji} ${disease.name}\nConfianza: ${(topPred.confidence * 100).toFixed(1)}%\n\nAnálisis realizado con AgroScan IA`,
+                url: window.location.origin + '/results'
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    showToast('✅', 'Compartido exitosamente');
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        console.error('Error compartiendo:', err);
+                        copyToClipboard();
+                    }
+                }
+            } else {
+                copyToClipboard();
+            }
+        }
+
+        function copyToClipboard() {
+            const { predictions } = currentResultData;
+            const topPred = predictions[0];
+            const disease = diseaseDatabase[topPred.disease];
+            const text = `${disease.emoji} ${disease.name} - ${(topPred.confidence * 100).toFixed(1)}% confianza`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋', 'Resultado copiado al portapapeles');
+            }).catch(() => {
+                showToast('ℹ️', 'No se pudo compartir');
+            });
+        }
+
+        // Nuevo análisis
+        function newAnalysis() {
+            localStorage.removeItem('latest_result');
+            window.location.href = '/camera';
+        }
+
+        // Ver detalles completos
+        function viewDetails() {
+            if (!currentResultData) return;
+
+            const { imageUri, predictions } = currentResultData;
+            const topPred = predictions[0];
+            const now = new Date();
+            
+            // Guardar en localStorage para evitar URI demasiado largo
+            const detailData = {
+                imageUri: imageUri,
+                prediction: topPred.disease,
+                confidence: topPred.confidence,
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString()
+            };
+            
+            localStorage.setItem('detail_view_data', JSON.stringify(detailData));
+            window.location.href = '/history_details';
+        }
+
+        // Inicializar
+        loadResults();
+    </script>
+{% endblock %}
